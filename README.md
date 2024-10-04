@@ -1,5 +1,5 @@
 # Building a simple PKI infrastructure
-We are assuming an organisation named Simple Inc, which has control over the domain simple.org. Let’s look at the steps involved in building the PKI infrastructure which includes Root CA, Signing CA and TLS certificate.
+We are assuming an organisation named Binghamton Inc, which has control over the domain binghamton.org. Let’s look at the steps involved in building the PKI infrastructure which includes Root CA, Signing CA and TLS certificate.
 
 Clone the Simple PKI example files and change directory:
 
@@ -113,11 +113,11 @@ openssl ca \
 To create the TLS server certificate first we need to create the TLS server request using the command below. This will create a private key and a certificate signing request for the TLS server certificate.
 
 ```
-SAN=DNS:www.simple.org \
+SAN=DNS:www.binghamton.org \
 openssl req -new \
     -config etc/server.conf \
-    -out certs/simple.org.csr \
-    -keyout certs/simple.org.key
+    -out certs/binghamton.org.csr \
+    -keyout certs/binghamton.org.key
 ```
 
 <img width="833" alt="image2" src="https://user-images.githubusercontent.com/6368257/101062936-3d156900-35b8-11eb-8282-51c9fc6cea6b.png">
@@ -127,8 +127,8 @@ Using the signing CA and the CSR created from the previous step, a server certif
 ```
 openssl ca \
     -config etc/signing-ca.conf \
-    -in certs/simple.org.csr \
-    -out certs/simple.org.crt \
+    -in certs/binghamton.org.csr \
+    -out certs/binghamton.org.crt \
     -extensions server_ext
 ```
 
@@ -150,8 +150,8 @@ We will use the generated TLS certificate above to configure Tomcat to work with
 Prepare the keystore file and add the root and signing certificate:
 
 ```
-keytool -import -alias root-ca -keystore certs/simple.jks -trustcacerts -file ca/root-ca.crt
-keytool -import -alias signing-ca -keystore certs/simple.jks -trustcacerts -file ca/signing-ca.crt
+keytool -import -alias root-ca -keystore certs/binghamton.jks -trustcacerts -file ca/root-ca.crt
+keytool -import -alias signing-ca -keystore certs/binghamton.jks -trustcacerts -file ca/signing-ca.crt
 ```
 
 <img width="1014" alt="Screen Shot 2020-12-07 at 12 53 47 PM" src="https://user-images.githubusercontent.com/6368257/101324780-c4046300-3890-11eb-882f-ca04a90173d5.png">
@@ -161,7 +161,7 @@ keytool -import -alias signing-ca -keystore certs/simple.jks -trustcacerts -file
 Generate the certificate-key pair for the server:
 
 ```
-openssl pkcs12 -export -name "tomcat" -inkey certs/simple.org.key -in certs/simple.org.crt -out certs/simple.p12
+openssl pkcs12 -export -name "tomcat" -inkey certs/binghamton.org.key -in certs/binghamton.org.crt -out certs/binghamton.p12
 ```
 
 <img width="1009" alt="Screen Shot 2020-12-07 at 12 56 48 PM" src="https://user-images.githubusercontent.com/6368257/101324821-cd8dcb00-3890-11eb-8124-15befa12ce64.png">
@@ -169,7 +169,7 @@ openssl pkcs12 -export -name "tomcat" -inkey certs/simple.org.key -in certs/simp
 Import the certificate-key pair to the keystore:
 
 ```
-keytool -importkeystore -srckeystore certs/simple.p12 -destkeystore certs/simple.jks -srcstoretype pkcs12 -alias tomcat
+keytool -importkeystore -srckeystore certs/binghamton.p12 -destkeystore certs/binghamton.jks -srcstoretype pkcs12 -alias tomcat
 ```
 
 <img width="1013" alt="Screen Shot 2020-12-07 at 12 59 21 PM" src="https://user-images.githubusercontent.com/6368257/101324841-d7afc980-3890-11eb-814e-3a91ec28c7cf.png">
@@ -180,7 +180,7 @@ Once the keystore is ready, then in Tomcat, the SSL configuration needs to be ma
 <Connector protocol="org.apache.coyote.http11.Http11NioProtocol"
     sslImplementationName="org.apache.tomcat.util.net.jsse.JSSEImplementation"
     port="8443" maxThreads="150" SSLEnabled="true" scheme="https"
-    secure="true" keyAlias="tomcat"  keystoreFile="/home/babu/github/simple-pki/certs/simple.jks"
+    secure="true" keyAlias="tomcat"  keystoreFile="/home/babu/github/binghamton-pki/certs/binghamton.jks"
     keystorePass="changeit" clientAuth="false" sslProtocol="TLS" />
 ```
 After the configuration change, restart Tomcat and navigate to https://localhost:8443/
